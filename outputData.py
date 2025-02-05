@@ -23,7 +23,7 @@ def write_geo_info():
 
     data = {str(obj_name[0]):{"Polycount" : len(vertex_count), "Path" : asset_filepath}}
     file_data = []
-    file_path = "C:/Users/Aro/Documents/FullSail/PNP4/assetHelper/data.json"
+    file_path = "C:/Users/Aro/Documents/GitHub/assetHelper/assetinfo.json"
     if os.path.exists(file_path):
         if os.stat(file_path).st_size != 0:
             with open(file_path, "r") as file:
@@ -32,4 +32,4 @@ def write_geo_info():
         file_data.append(data)
         json.dump(file_data, file, indent=4)
 
-write_geo_info()
+#write_geo_info()
