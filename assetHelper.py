@@ -8,6 +8,7 @@ from PySide2 import QtGui
 from shiboken2 import wrapInstance
 
 import maya.OpenMayaUI as omui
+import maya.cmds as cmds
 
 """
 Only for testing
@@ -30,15 +31,17 @@ def maya_main_window():
 
 
 class AssetHelperDialog(QtWidgets.QDialog):
-    # class level variable
+    # Class level variable
     FILE_FILTERS = "Maya (*.ma *.mb);;Maya ASCII (*.ma);;Maya Binary (*.mb);;ALL Files (*.*)"
     selected_filter = "Maya (*.ma *.mb)"
-    selected_files_path = []
+    selected_file_paths = []
+    load_file_list = []
+    hilight_index = None
 
 
     def __init__(self, parent=maya_main_window()):
         super(AssetHelperDialog, self).__init__(parent)
-        # set window value
+        # Set window value
         self.setWindowTitle("Asset Helper")
         self.setMinimumWidth(350)
         self.setMinimumHeight(500)
@@ -47,24 +50,24 @@ class AssetHelperDialog(QtWidgets.QDialog):
             self.setWindowFlag(QtCore.Qt.WindowContextHelpButtonHint, False)
         else:
             self.setWindowFlags(self.windowFlags() ^ QtCore.Qt.WindowContextHelpButtonHint)
-        # call all the methods for UI
+        # Call all the methods for UI
         self.create_widgets()
         self.create_layouts()
         self.create_connections()
 
     # Create all the widgets
     def create_widgets(self):
-        # top bar widgets
-        self.import_assets_btn = QtWidgets.QPushButton("Import")
+        # Top bar widgets
+        self.import_assets_btn = QtWidgets.QPushButton("Load")
         self.remove_assets_btn = QtWidgets.QPushButton("Remove")
         self.info_btn = QtWidgets.QPushButton("Info")
         self.setting_btn = QtWidgets.QPushButton("Setting")
-        # preview widget
+        # Preview widget
         self.preview_list = QtWidgets.QListView()
         self.model = QtGui.QStandardItemModel()
         self.preview_list.setModel(self.model)
         self.preview_list.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
-        # buttom widgets
+        # Buttom widgets
         self.import_btn = QtWidgets.QPushButton("Import to Current Scene")
         self.import_btn.setFixedSize(150,30)
 
@@ -73,19 +76,19 @@ class AssetHelperDialog(QtWidgets.QDialog):
 
     # Create UI layouts and add widgets to respective layout
     def create_layouts(self):
-        # top buttons layout
+        # Top buttons layout
         tool_bar_layout = QtWidgets.QHBoxLayout()
         tool_bar_layout.addWidget(self.import_assets_btn, alignment=QtCore.Qt.AlignLeft)
         tool_bar_layout.addWidget(self.remove_assets_btn, alignment=QtCore.Qt.AlignLeft)
         tool_bar_layout.addWidget(self.info_btn, alignment=QtCore.Qt.AlignLeft)
         tool_bar_layout.addWidget(self.setting_btn, alignment=QtCore.Qt.AlignLeft)
         tool_bar_layout.addStretch()
-        # buttom buttons layout
+        # Buttom buttons layout
         button_layout = QtWidgets.QHBoxLayout()
         button_layout.addStretch()
         button_layout.addWidget(self.import_btn)
         button_layout.addWidget(self.close_btn)
-        # main layout
+        # Main layout
         main_layout = QtWidgets.QVBoxLayout(self)
         main_layout.addLayout(tool_bar_layout)
         main_layout.addWidget(self.preview_list)
@@ -98,28 +101,28 @@ class AssetHelperDialog(QtWidgets.QDialog):
         self.info_btn.clicked.connect(self.open_info_dialog)
         self.setting_btn.clicked.connect(self.open_setting_dialog)
         self.import_btn.clicked.connect(self.import_to_scene)
-        self.close_btn.clicked.connect(self.close)
-        self.preview_list.clicked.connect(self.add_selected_to_list)
+        self.preview_list.clicked.connect(self.highlight_item)
         # self.model.itemChanged.connect(self.add_selected_to_list)
+        self.close_btn.clicked.connect(self.test_print)
 
     # Functions for UI behavior
     def open_import_dialog(self, *arg):
-        selected_files_path = QtWidgets.QFileDialog.getOpenFileNames(self, "Select File", "", self.FILE_FILTERS, self.selected_filter)
-        # if cancel 
-        if not selected_files_path[0]: 
+        self.selected_file_paths = QtWidgets.QFileDialog.getOpenFileNames(self, "Select File", "", self.FILE_FILTERS, self.selected_filter)[0]
+        # If cancel 
+        if not self.selected_file_paths: 
             print("Cancel Select File Window")
             return
-        # get all asset name in file_list
+        # Get all asset name in file_list
         file_list = []
-        for file in selected_files_path[0]:
+        for file in self.selected_file_paths:
             file_list.append((os.path.splitext(os.path.basename(file))[0]))
 
-        # add file name to preview
+        # Add file name to preview
         self.asset_to_list(file_list)
 
 
     def remove_selected_item(self):
-        print("Remove item")
+        self.model.removeRows(self.hilight_index.row(),1)
 
 
     def open_info_dialog(self):
@@ -133,7 +136,20 @@ class AssetHelperDialog(QtWidgets.QDialog):
 
 
     def import_to_scene(self):
-        print(self.model.item(0).text())
+        if not self.model.rowCount():
+            selection_warning_dialog = QtWidgets.QMessageBox.warning(self, "Import Asset Warning","No Asset Selected!\nPlease select at least one asset")
+        # Iterate through the model
+        for index in range(self.model.rowCount()):
+            # Append to load_file_list if it's checked and not in list yet
+            if self.model.item(index).checkState() == QtCore.Qt.CheckState.Checked:
+                if self.model.item(index).text() not in self.load_file_list:
+                    self.load_file_list.append(self.model.item(index).text())
+            else:
+                if self.model.item(index).text() in self.load_file_list:
+                    self.load_file_list.remove(self.model.item(index).text())
+        # Import file
+        for path in self.selected_file_paths:
+            cmds.file(path, i=True, ignoreVersion=True)
 
 
     def asset_to_list(self, file_list):
@@ -141,17 +157,18 @@ class AssetHelperDialog(QtWidgets.QDialog):
             item = QtGui.QStandardItem(i)
             font = QtGui.QFont("Times", 15)
             item.setFont(font)
-            # item.setCheckable(True) # not use checkable for selection for now
+            item.setEditable(False)
+            item.setCheckable(True) # not use checkable for selection for now
             self.model.appendRow(item)
 
 
-    def add_selected_to_list(self, index):
-        print(self.model.itemFromIndex(index).text())
+    def highlight_item(self, index):
+        self.hilight_index = index
 
-        """ not use checkable from model for now
-        for item in self.model:
-            if item.checkState() == Qt.Checked:
-                print(item.text())"""
+
+    def test_print(self):
+        print(self.selected_file_paths)
+
 
 
 
