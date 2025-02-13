@@ -66,7 +66,7 @@ class AssetHelperDialog(QtWidgets.QDialog):
         self.preview_list = QtWidgets.QListView()
         self.model = QtGui.QStandardItemModel()
         self.preview_list.setModel(self.model)
-        self.preview_list.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
+        # self.preview_list.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
         # Buttom widgets
         self.import_btn = QtWidgets.QPushButton("Import to Current Scene")
         self.import_btn.setFixedSize(150,30)

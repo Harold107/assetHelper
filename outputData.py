@@ -33,3 +33,5 @@ def write_geo_info():
         json.dump(file_data, file, indent=4)
 
 #write_geo_info()
+
+print(get_poly_count())
