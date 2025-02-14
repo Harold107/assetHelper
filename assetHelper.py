@@ -1,5 +1,6 @@
 import sys
 import os
+import json
 from importlib import reload
 
 from PySide2 import QtCore
@@ -18,6 +19,8 @@ if project_path not in sys.path:
     sys.path.append(project_path)
 import settingDialog
 reload(settingDialog)
+import helperFunctions
+reload(helperFunctions)
 
 
 
@@ -33,6 +36,7 @@ def maya_main_window():
 class AssetHelperDialog(QtWidgets.QDialog):
     # Class level variable
     FILE_FILTERS = "Maya (*.ma *.mb);;Maya ASCII (*.ma);;Maya Binary (*.mb);;ALL Files (*.*)"
+    JSON_PATH = os.path.dirname(os.path.abspath(__file__)) + r"\assetinfo.json"
     selected_filter = "Maya (*.ma *.mb)"
     selected_file_paths = []
     load_file_list = []
@@ -62,6 +66,7 @@ class AssetHelperDialog(QtWidgets.QDialog):
         self.remove_assets_btn = QtWidgets.QPushButton("Remove")
         self.info_btn = QtWidgets.QPushButton("Info")
         self.setting_btn = QtWidgets.QPushButton("Setting")
+        self.reset_btn = QtWidgets  .QPushButton("Reset")
         # Preview widget
         self.preview_list = QtWidgets.QListView()
         self.model = QtGui.QStandardItemModel()
@@ -82,6 +87,7 @@ class AssetHelperDialog(QtWidgets.QDialog):
         tool_bar_layout.addWidget(self.remove_assets_btn, alignment=QtCore.Qt.AlignLeft)
         tool_bar_layout.addWidget(self.info_btn, alignment=QtCore.Qt.AlignLeft)
         tool_bar_layout.addWidget(self.setting_btn, alignment=QtCore.Qt.AlignLeft)
+        tool_bar_layout.addWidget(self.reset_btn, alignment=QtCore.Qt.AlignLeft)
         tool_bar_layout.addStretch()
         # Buttom buttons layout
         button_layout = QtWidgets.QHBoxLayout()
@@ -100,6 +106,7 @@ class AssetHelperDialog(QtWidgets.QDialog):
         self.remove_assets_btn.clicked.connect(self.remove_selected_item)
         self.info_btn.clicked.connect(self.open_info_dialog)
         self.setting_btn.clicked.connect(self.open_setting_dialog)
+        self.reset_btn.clicked.connect(self.reset_data)
         self.import_btn.clicked.connect(self.import_to_scene)
         self.preview_list.clicked.connect(self.highlight_item)
         # self.model.itemChanged.connect(self.add_selected_to_list)
@@ -112,17 +119,23 @@ class AssetHelperDialog(QtWidgets.QDialog):
         if not self.selected_file_paths: 
             print("Cancel Select File Window")
             return
-        # Get all asset name in file_list
-        file_list = []
+        # Get all asset name in asset_list
+        asset_list = [] #list for all asset name
+        path_list = [] #list for all path
         for file in self.selected_file_paths:
-            file_list.append((os.path.splitext(os.path.basename(file))[0]))
+            asset_list.append((os.path.splitext(os.path.basename(file))[0]))
+            path_list.append(file)
+
+        for n in range (len(path_list)):
+            helperFunctions.load_files(asset_list[n], path_list[n], self.JSON_PATH)
 
         # Add file name to preview
-        self.asset_to_list(file_list)
+        self.asset_to_list(asset_list)
 
 
     def remove_selected_item(self):
         self.model.removeRows(self.hilight_index.row(),1)
+        helperFunctions.delete_load_asset(self.model.itemFromIndex(index).text(), self.JSON_PATH)
 
 
     def open_info_dialog(self):
@@ -152,8 +165,8 @@ class AssetHelperDialog(QtWidgets.QDialog):
             cmds.file(path, i=True, ignoreVersion=True)
 
 
-    def asset_to_list(self, file_list):
-        for i in file_list:
+    def asset_to_list(self, asset_list):
+        for i in asset_list:
             item = QtGui.QStandardItem(i)
             font = QtGui.QFont("Times", 15)
             item.setFont(font)
@@ -166,8 +179,19 @@ class AssetHelperDialog(QtWidgets.QDialog):
         self.hilight_index = index
 
 
+    def reset_data(self):
+        json_data = []
+
+        if os.path.exists(self.JSON_PATH):
+            with open(self.JSON_PATH, "w") as file:
+                json.dump(json_data, file, indent=4)
+
+        self.model.clear()
+
+
     def test_print(self):
-        print(self.selected_file_paths)
+        # print(self.selected_file_paths)
+        print(self.JSON_PATH)
 
 
 
