@@ -68,11 +68,14 @@ class AssetHelperDialog(QtWidgets.QDialog):
         self.info_btn = QtWidgets.QPushButton("Info")
         self.setting_btn = QtWidgets.QPushButton("Setting")
         self.reset_btn = QtWidgets  .QPushButton("Reset")
+
         # Preview widget
         self.preview_list = QtWidgets.QListView()
         self.model = QtGui.QStandardItemModel()
         self.preview_list.setModel(self.model)
+        self.preview_list.setIconSize(QtCore.QSize(180,180))
         # self.preview_list.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
+
         # Buttom widgets
         self.import_btn = QtWidgets.QPushButton("Import to Current Scene")
         self.import_btn.setFixedSize(200,30)
@@ -181,6 +184,7 @@ class AssetHelperDialog(QtWidgets.QDialog):
             item = QtGui.QStandardItem(i)
             font = QtGui.QFont("Times", 15)
             item.setFont(font)
+            item.setIcon(QtGui.QIcon(self.IMAGE_PATH + "cube.png"))
             item.setEditable(False)
             item.setCheckable(True) # not use checkable for selection for now
             self.model.appendRow(item)
