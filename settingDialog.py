@@ -22,9 +22,9 @@ class SettingDialog(QtWidgets.QDialog):
 
         self.setWindowTitle("Setting Window")
         self.setMinimumWidth(300)
-        self.setMinimumHeight(100)
+        self.setMinimumHeight(150)
         self.setMaximumWidth(300)
-        self.setMaximumHeight(100)
+        self.setMaximumHeight(150)
 
         self.create_widgets()
         self.create_layouts()

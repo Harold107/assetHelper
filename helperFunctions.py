@@ -77,8 +77,11 @@ def delete_load_asset(asset_name, json_path):
     for n in range (len(json_data)):
         if asset_name in json_data[n]:
             json_data.pop(n)
-        else:
-            print(f"Didn't find asset called {asset_name}")
+            break
+        elif n == len(json_data):
+            print(f"{asset_name} is not in the json data")
+
+
 
     with open(json_path, "w") as file:
         json.dump(json_data, file, indent=4)
@@ -108,11 +111,27 @@ def get_current_time():
     if len(ct_minute) < 2:
         ct_minute = "0" + ct_minute
 
-    return (f"{ct_year}-{ct_month}-{ct_day} {ct_hour}:{ct_minute}")
+    return (f"{ct_month}/{ct_day}/{ct_year}  {ct_hour}:{ct_minute}")
+
+
+# Get asset daya
+def get_asset_data(asset_name, json_path):
+    data_list = []
+    if os.path.exists(json_path):
+        if os.stat(json_path).st_size != 0:
+            with open(json_path, "r") as file:
+                json_data = json.load(file)
+
+        for data in json_data:
+            if asset_name in data:
+                data_list.append(data[asset_name]["Polycount"])
+                data_list.append(data[asset_name]["Path"])
+                data_list.append(data[asset_name]["Modified Date"]) 
+                break
+        return data_list
+
 
 
 # Testing
-# cmds.file(f=True, newFile=True)
-# load_files(file_path)
-# delete_load_asset("Mix", "C:/Users/Aro/Documents/GitHub/assetHelper/assetinfo.json")
+# delete_load_asset("sphere", "C:/Users/spike/Documents/GitHub/assetHelper/assetinfo.json")
 

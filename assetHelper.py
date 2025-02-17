@@ -14,7 +14,7 @@ import maya.cmds as cmds
 """
 Only for testing
 """
-project_path = r"C:\Users\Aro\Documents\GitHub\assetHelper"
+project_path = r"C:\Users\spike\Documents\GitHub\assetHelper"
 if project_path not in sys.path:
     sys.path.append(project_path)
 import settingDialog
@@ -37,9 +37,8 @@ class AssetHelperDialog(QtWidgets.QDialog):
     # Class level variable
     FILE_FILTERS = "Maya (*.ma *.mb);;Maya ASCII (*.ma);;Maya Binary (*.mb);;ALL Files (*.*)"
     JSON_PATH = os.path.dirname(os.path.abspath(__file__)) + r"\assetinfo.json"
+    IMAGE_PATH = os.path.dirname(os.path.abspath(__file__)) + "\\image\\"
     selected_filter = "Maya (*.ma *.mb)"
-    selected_file_paths = []
-    load_file_list = []
     hilight_index = None
 
 
@@ -59,6 +58,8 @@ class AssetHelperDialog(QtWidgets.QDialog):
         self.create_layouts()
         self.create_connections()
 
+        self.initialize_data()
+
     # Create all the widgets
     def create_widgets(self):
         # Top bar widgets
@@ -74,7 +75,7 @@ class AssetHelperDialog(QtWidgets.QDialog):
         # self.preview_list.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
         # Buttom widgets
         self.import_btn = QtWidgets.QPushButton("Import to Current Scene")
-        self.import_btn.setFixedSize(150,30)
+        self.import_btn.setFixedSize(200,30)
 
         self.close_btn = QtWidgets.QPushButton("Close")
         self.close_btn.setFixedSize(50,30)
@@ -114,15 +115,15 @@ class AssetHelperDialog(QtWidgets.QDialog):
 
     # Functions for UI behavior
     def open_import_dialog(self, *arg):
-        self.selected_file_paths = QtWidgets.QFileDialog.getOpenFileNames(self, "Select File", "", self.FILE_FILTERS, self.selected_filter)[0]
+        selected_file_paths = QtWidgets.QFileDialog.getOpenFileNames(self, "Select File", "", self.FILE_FILTERS, self.selected_filter)[0]
         # If cancel 
-        if not self.selected_file_paths: 
+        if not selected_file_paths: 
             print("Cancel Select File Window")
             return
         # Get all asset name in asset_list
         asset_list = [] #list for all asset name
         path_list = [] #list for all path
-        for file in self.selected_file_paths:
+        for file in selected_file_paths:
             asset_list.append((os.path.splitext(os.path.basename(file))[0]))
             path_list.append(file)
 
@@ -134,12 +135,15 @@ class AssetHelperDialog(QtWidgets.QDialog):
 
 
     def remove_selected_item(self):
-        self.model.removeRows(self.hilight_index.row(),1)
-        helperFunctions.delete_load_asset(self.model.itemFromIndex(index).text(), self.JSON_PATH)
+        helperFunctions.delete_load_asset(self.model.itemFromIndex(self.hilight_index).text(), self.JSON_PATH)
+        self.model.removeRow(self.hilight_index.row())
 
 
     def open_info_dialog(self):
-        geo_info = "Asset Name: Cube\nPolycount: 100,00\nDate Modified: 2/1/2025"
+        asset_name = self.model.itemFromIndex(self.hilight_index).text()
+        data_list = helperFunctions.get_asset_data(asset_name, self.JSON_PATH)
+
+        geo_info = f"Asset Name: {asset_name}\nPolycount: {data_list[0]}\nDate Modified: {data_list[2]}"
         info_dialog = QtWidgets.QMessageBox.information(self, "Asset Information", geo_info)
 
 
@@ -149,19 +153,26 @@ class AssetHelperDialog(QtWidgets.QDialog):
 
 
     def import_to_scene(self):
+        selected_file_paths = []
+        load_file_list = []
         if not self.model.rowCount():
             selection_warning_dialog = QtWidgets.QMessageBox.warning(self, "Import Asset Warning","No Asset Selected!\nPlease select at least one asset")
         # Iterate through the model
         for index in range(self.model.rowCount()):
             # Append to load_file_list if it's checked and not in list yet
             if self.model.item(index).checkState() == QtCore.Qt.CheckState.Checked:
-                if self.model.item(index).text() not in self.load_file_list:
-                    self.load_file_list.append(self.model.item(index).text())
+                if self.model.item(index).text() not in load_file_list:
+                    load_file_list.append(self.model.item(index).text())
             else:
-                if self.model.item(index).text() in self.load_file_list:
-                    self.load_file_list.remove(self.model.item(index).text())
+                if self.model.item(index).text() in load_file_list:
+                    load_file_list.remove(self.model.item(index).text())
+
+        for asset in load_file_list:
+            file_path = helperFunctions.get_asset_data(asset, self.JSON_PATH)[1]
+            selected_file_paths.append(file_path)
+
         # Import file
-        for path in self.selected_file_paths:
+        for path in selected_file_paths:
             cmds.file(path, i=True, ignoreVersion=True)
 
 
@@ -187,6 +198,18 @@ class AssetHelperDialog(QtWidgets.QDialog):
                 json.dump(json_data, file, indent=4)
 
         self.model.clear()
+
+
+    def initialize_data(self):
+        asset_list = []
+        if os.path.exists(self.JSON_PATH):
+            if os.stat(self.JSON_PATH).st_size != 0:
+                with open(self.JSON_PATH, "r") as file:
+                    json_data = json.load(file)
+
+                for data in json_data:
+                    asset_list.append(list(data.keys())[0])
+            self.asset_to_list(asset_list)
 
 
     def test_print(self):

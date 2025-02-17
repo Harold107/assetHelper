@@ -1,1 +1,30 @@
-[]
+[
+    {
+        "cube": {
+            "Polycount": 8,
+            "Path": "C:/Users/spike/Desktop/New Folder/cube.ma",
+            "Modified Date": "02/16/2025  20:49"
+        }
+    },
+    {
+        "cylinder": {
+            "Polycount": 42,
+            "Path": "C:/Users/spike/Desktop/New Folder/cylinder.ma",
+            "Modified Date": "02/16/2025  20:49"
+        }
+    },
+    {
+        "sphere": {
+            "Polycount": 382,
+            "Path": "C:/Users/spike/Desktop/New Folder/sphere.ma",
+            "Modified Date": "02/16/2025  20:49"
+        }
+    },
+    {
+        "two_set": {
+            "Polycount": 421,
+            "Path": "C:/Users/spike/Desktop/New Folder/two_set.ma",
+            "Modified Date": "02/16/2025  20:49"
+        }
+    }
+]
