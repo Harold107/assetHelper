@@ -6,7 +6,7 @@ import maya.cmds as cmds
 import maya.api.OpenMaya as om2
 
 
-def load_files(asset_name, file_path, json_path):
+def load_files(asset_name, file_path, json_path, image_dir):
     # Get vertex count
     object = cmds.file(file_path, i=True, ignoreVersion=True, returnNewNodes=True)
     vtx_count = 0
@@ -25,10 +25,18 @@ def load_files(asset_name, file_path, json_path):
         if cmds.nodeType(node) == "transform":
             del_nodes.append(node)
 
+    # group all objects from import
+    cmds.select(del_nodes)
+    selected_objs = cmds.ls(selection=True)
+    if selected_objs:
+        group_name = cmds.group(empty=True, name="asset_grp")
+        cmds.parent(selected_objs, group_name)
+
+    # save snap shot
+    snap_shot(asset_name, group_name, image_dir)
+
     # Delete all in del_list
-    for node in del_nodes:
-        cmds.select(node)
-        cmds.delete()
+    cmds.delete(group_name)
 
 
 # Get vertices list
@@ -67,13 +75,14 @@ def write_asset_info(asset_name, vtx_count, asset_filepath, current_time, json_p
             json.dump(json_data, file, indent=4)
 
 
-# Remove asset data from json
-def delete_load_asset(asset_name, json_path):
+# Remove asset data from json and image preview
+def delete_load_asset(asset_name, json_path, image_dir):
     if os.path.exists(json_path):
         if os.stat(json_path).st_size != 0:
             with open(json_path, "r") as file:
                 json_data = json.load(file)
 
+    # remove item from list if name is the key
     for n in range (len(json_data)):
         if asset_name in json_data[n]:
             json_data.pop(n)
@@ -81,7 +90,8 @@ def delete_load_asset(asset_name, json_path):
         elif n == len(json_data):
             print(f"{asset_name} is not in the json data")
 
-
+    # remove associated image file
+    os.remove(image_dir + f"{asset_name}.0.png")
 
     with open(json_path, "w") as file:
         json.dump(json_data, file, indent=4)
@@ -131,7 +141,39 @@ def get_asset_data(asset_name, json_path):
         return data_list
 
 
+def snap_shot(asset_name, group_name, image_dir):
+    cameraName = cmds.camera(name="snap_cam", 
+                             position=(5,5,5),
+                             focalLength=75 )
+
+    # Render assets
+    cmds.currentUnit(linear="meter")
+
+    # Select group to frame within camera
+    cmds.select(group_name)
+
+    # set Perspective camera position
+    cmds.xform(cameraName[0], ws=True, translation=(-3.885, 4.732, 12.531))
+    cmds.xform(cameraName[0], ws=True, rotation=(-14.4, -23.6, 0.0))
+    # Set camera focal length to 85
+    cmds.setAttr(cameraName[1] + ".focalLength", 85)
+    cmds.viewFit(cameraName[1])  # Frame camera view to fit object scale
+    cmds.lookThru(cameraName[0])
+    cmds.currentUnit(linear="cm")
+    cmds.select(clear=True)
+    cmds.playblast(filename = image_dir + asset_name,
+                    frame=[1],
+                    percent=100,
+                    framePadding=0,
+                    compression="png",
+                    viewer=False,
+                    clearCache=True,
+                    format="image",
+                    widthHeight=(300,300),
+                    showOrnaments = False)
+    cmds.delete(cameraName[0])
 
 # Testing
-# delete_load_asset("sphere", "C:/Users/spike/Documents/GitHub/assetHelper/assetinfo.json")
+# load_files("two_set", "C:\\Users\\spike\\Desktop\\New Folder\\two_set.ma", "C:/Users/spike/Documents/GitHub/assetHelper/assetinfo.json")
 
+# snap_shot("pTorus1", "C:\\Users\\spike\\Documents\\GitHub\\assetHelper\\image\\")

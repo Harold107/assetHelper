@@ -48,11 +48,13 @@ class AssetHelperDialog(QtWidgets.QDialog):
         self.setWindowTitle("Asset Helper")
         self.setMinimumWidth(350)
         self.setMinimumHeight(500)
+
         # Remove HelpButton on the bar, check for python version
         if sys.version_info.major >= 3:
             self.setWindowFlag(QtCore.Qt.WindowContextHelpButtonHint, False)
         else:
             self.setWindowFlags(self.windowFlags() ^ QtCore.Qt.WindowContextHelpButtonHint)
+
         # Call all the methods for UI
         self.create_widgets()
         self.create_layouts()
@@ -93,11 +95,13 @@ class AssetHelperDialog(QtWidgets.QDialog):
         tool_bar_layout.addWidget(self.setting_btn, alignment=QtCore.Qt.AlignLeft)
         tool_bar_layout.addWidget(self.reset_btn, alignment=QtCore.Qt.AlignLeft)
         tool_bar_layout.addStretch()
+
         # Buttom buttons layout
         button_layout = QtWidgets.QHBoxLayout()
         button_layout.addStretch()
         button_layout.addWidget(self.import_btn)
         button_layout.addWidget(self.close_btn)
+
         # Main layout
         main_layout = QtWidgets.QVBoxLayout(self)
         main_layout.addLayout(tool_bar_layout)
@@ -113,16 +117,17 @@ class AssetHelperDialog(QtWidgets.QDialog):
         self.reset_btn.clicked.connect(self.reset_data)
         self.import_btn.clicked.connect(self.import_to_scene)
         self.preview_list.clicked.connect(self.highlight_item)
-        # self.model.itemChanged.connect(self.add_selected_to_list)
         self.close_btn.clicked.connect(self.test_print)
 
     # Functions for UI behavior
     def open_import_dialog(self, *arg):
         selected_file_paths = QtWidgets.QFileDialog.getOpenFileNames(self, "Select File", "", self.FILE_FILTERS, self.selected_filter)[0]
-        # If cancel 
+
+        # If cancel clicked
         if not selected_file_paths: 
             print("Cancel Select File Window")
             return
+
         # Get all asset name in asset_list
         asset_list = [] #list for all asset name
         path_list = [] #list for all path
@@ -130,23 +135,24 @@ class AssetHelperDialog(QtWidgets.QDialog):
             asset_list.append((os.path.splitext(os.path.basename(file))[0]))
             path_list.append(file)
 
+        # load files from path list
         for n in range (len(path_list)):
-            helperFunctions.load_files(asset_list[n], path_list[n], self.JSON_PATH)
+            helperFunctions.load_files(asset_list[n], path_list[n], self.JSON_PATH, self.IMAGE_PATH)
 
         # Add file name to preview
         self.asset_to_list(asset_list)
 
 
     def remove_selected_item(self):
-        helperFunctions.delete_load_asset(self.model.itemFromIndex(self.hilight_index).text(), self.JSON_PATH)
+        helperFunctions.delete_load_asset(self.model.itemFromIndex(self.hilight_index).text(), self.JSON_PATH, self.IMAGE_PATH)
         self.model.removeRow(self.hilight_index.row())
 
 
     def open_info_dialog(self):
-        asset_name = self.model.itemFromIndex(self.hilight_index).text()
-        data_list = helperFunctions.get_asset_data(asset_name, self.JSON_PATH)
+        asset_name = self.model.itemFromIndex(self.hilight_index).text() # get asset name from clicked list item
+        data_list = helperFunctions.get_asset_data(asset_name, self.JSON_PATH) # use asset name from json data
 
-        geo_info = f"Asset Name: {asset_name}\nPolycount: {data_list[0]}\nDate Modified: {data_list[2]}"
+        geo_info = f"Asset Name: {asset_name}\nPolycount: {data_list[0]}\nDate Modified: {data_list[2]}" # store display message
         info_dialog = QtWidgets.QMessageBox.information(self, "Asset Information", geo_info)
 
 
@@ -156,10 +162,11 @@ class AssetHelperDialog(QtWidgets.QDialog):
 
 
     def import_to_scene(self):
-        selected_file_paths = []
-        load_file_list = []
+        selected_file_paths = [] # contain asset file paths
+        load_file_list = [] # contain asset names
         if not self.model.rowCount():
             selection_warning_dialog = QtWidgets.QMessageBox.warning(self, "Import Asset Warning","No Asset Selected!\nPlease select at least one asset")
+
         # Iterate through the model
         for index in range(self.model.rowCount()):
             # Append to load_file_list if it's checked and not in list yet
@@ -170,52 +177,61 @@ class AssetHelperDialog(QtWidgets.QDialog):
                 if self.model.item(index).text() in load_file_list:
                     load_file_list.remove(self.model.item(index).text())
 
+        # Append file path to list 
         for asset in load_file_list:
             file_path = helperFunctions.get_asset_data(asset, self.JSON_PATH)[1]
             selected_file_paths.append(file_path)
 
-        # Import file
+        # Import file from the path list
         for path in selected_file_paths:
             cmds.file(path, i=True, ignoreVersion=True)
 
 
     def asset_to_list(self, asset_list):
-        for i in asset_list:
-            item = QtGui.QStandardItem(i)
-            font = QtGui.QFont("Times", 15)
-            item.setFont(font)
-            item.setIcon(QtGui.QIcon(self.IMAGE_PATH + "cube.png"))
-            item.setEditable(False)
+        for asset_name in asset_list:
+            item = QtGui.QStandardItem(asset_name) # set item name
+            font = QtGui.QFont("Times", 15) # create item font
+            item.setFont(font) # set font
+            item.setIcon(QtGui.QIcon(self.IMAGE_PATH + asset_name + ".0.png")) # set image icon
+            item.setEditable(False) # set not editable
             item.setCheckable(True) # not use checkable for selection for now
-            self.model.appendRow(item)
+            self.model.appendRow(item) # add to listview
 
 
     def highlight_item(self, index):
+        # set class variable input item index
         self.hilight_index = index
 
 
     def reset_data(self):
-        json_data = []
-
+        json_data = [] # create empty list to replace json data
         if os.path.exists(self.JSON_PATH):
             with open(self.JSON_PATH, "w") as file:
+                # dump empty data to json file
                 json.dump(json_data, file, indent=4)
 
-        self.model.clear()
+        self.model.clear() # clear list view
+
+        # delete all images
+        images = os.listdir(self.IMAGE_PATH)
+        for image in images:
+            os.remove(self.IMAGE_PATH + image)
 
 
+    # initialize data when asset helper window created
     def initialize_data(self):
-        asset_list = []
+        asset_list = [] # list for reading in existing json data
         if os.path.exists(self.JSON_PATH):
             if os.stat(self.JSON_PATH).st_size != 0:
                 with open(self.JSON_PATH, "r") as file:
                     json_data = json.load(file)
-
+                # append json data to empty list
                 for data in json_data:
                     asset_list.append(list(data.keys())[0])
             self.asset_to_list(asset_list)
 
 
+    # test function
     def test_print(self):
         # print(self.selected_file_paths)
         print(self.JSON_PATH)
