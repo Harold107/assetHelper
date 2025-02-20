@@ -46,7 +46,7 @@ class AssetHelperDialog(QtWidgets.QDialog):
         super(AssetHelperDialog, self).__init__(parent)
         # Set window value
         self.setWindowTitle("Asset Helper")
-        self.setMinimumWidth(350)
+        self.setMinimumWidth(550)
         self.setMinimumHeight(500)
 
         # Remove HelpButton on the bar, check for python version
@@ -76,6 +76,7 @@ class AssetHelperDialog(QtWidgets.QDialog):
         self.model = QtGui.QStandardItemModel()
         self.preview_list.setModel(self.model)
         self.preview_list.setIconSize(QtCore.QSize(180,180))
+        self.preview_list.setViewMode(QtWidgets.QListView.IconMode)
         # self.preview_list.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
 
         # Buttom widgets
@@ -117,7 +118,7 @@ class AssetHelperDialog(QtWidgets.QDialog):
         self.reset_btn.clicked.connect(self.reset_data)
         self.import_btn.clicked.connect(self.import_to_scene)
         self.preview_list.clicked.connect(self.highlight_item)
-        self.close_btn.clicked.connect(self.test_print)
+        self.close_btn.clicked.connect(self.close)
 
     # Functions for UI behavior
     def open_import_dialog(self, *arg):
@@ -132,15 +133,20 @@ class AssetHelperDialog(QtWidgets.QDialog):
         asset_list = [] #list for all asset name
         path_list = [] #list for all path
         for file in selected_file_paths:
-            asset_list.append((os.path.splitext(os.path.basename(file))[0]))
-            path_list.append(file)
+            if self.check_not_in_list((os.path.splitext(os.path.basename(file))[0])):
+                asset_list.append((os.path.splitext(os.path.basename(file))[0]))
+                path_list.append(file)
 
-        # load files from path list
-        for n in range (len(path_list)):
-            helperFunctions.load_files(asset_list[n], path_list[n], self.JSON_PATH, self.IMAGE_PATH)
+        # If both list are not empty load the files and add to listview
+        if len(asset_list) > 0 and len(path_list) > 0:
+            # load files from path list
+            for n in range (len(path_list)):
+                helperFunctions.load_files(asset_list[n], path_list[n], self.JSON_PATH, self.IMAGE_PATH)
 
-        # Add file name to preview
-        self.asset_to_list(asset_list)
+            # Add file name to preview
+            self.asset_to_list(asset_list)
+        else:
+            print("All selected assets are in Assset Helper already")
 
 
     def remove_selected_item(self):
@@ -188,6 +194,9 @@ class AssetHelperDialog(QtWidgets.QDialog):
 
 
     def asset_to_list(self, asset_list):
+        color = QtGui.QColor(100, 100, 100, 127)
+        brush = QtGui.QBrush(color)
+        # brush = QtGui.QBrush(QtCore.Qt.red)
         for asset_name in asset_list:
             item = QtGui.QStandardItem(asset_name) # set item name
             font = QtGui.QFont("Times", 15) # create item font
@@ -195,7 +204,20 @@ class AssetHelperDialog(QtWidgets.QDialog):
             item.setIcon(QtGui.QIcon(self.IMAGE_PATH + asset_name + ".0.png")) # set image icon
             item.setEditable(False) # set not editable
             item.setCheckable(True) # not use checkable for selection for now
+
+            item.setBackground(brush)
             self.model.appendRow(item) # add to listview
+
+
+    # Check if asset name is not in the listview 
+    def check_not_in_list(self, asset_name):
+        result = True
+        for i in range (self.model.rowCount()):
+            if asset_name == self.model.item(i).text():
+                result = False
+                break
+
+        return result
 
 
     def highlight_item(self, index):
@@ -233,8 +255,10 @@ class AssetHelperDialog(QtWidgets.QDialog):
 
     # test function
     def test_print(self):
-        # print(self.selected_file_paths)
-        print(self.JSON_PATH)
+        # print(self.model.rowCount())
+        for i in range (self.model.rowCount()):
+            print(self.model.item(i).text())
+
 
 
 
