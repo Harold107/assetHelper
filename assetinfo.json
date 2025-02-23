@@ -1,16 +1,103 @@
 [
     {
-        "sphere": {
-            "Polycount": 382,
-            "Path": "C:/Users/spike/Desktop/New Folder/sphere.ma",
-            "Modified Date": "02/22/2025  18:01"
-        }
+        "asset_dir": "C:/Users/spike/Desktop/New Folder"
     },
     {
         "cube": {
             "Polycount": 8,
             "Path": "C:/Users/spike/Desktop/New Folder/cube.ma",
-            "Modified Date": "02/22/2025  18:01"
+            "Modified Date": "02/22/2025  20:27"
+        }
+    },
+    {
+        "disc": {
+            "Polycount": 61,
+            "Path": "C:/Users/spike/Desktop/New Folder/disc.ma",
+            "Modified Date": "02/22/2025  20:27"
+        }
+    },
+    {
+        "hat": {
+            "Polycount": 2894,
+            "Path": "C:/Users/spike/Desktop/New Folder/hat.ma",
+            "Modified Date": "02/22/2025  20:27"
+        }
+    },
+    {
+        "headphone": {
+            "Polycount": 322968,
+            "Path": "C:/Users/spike/Desktop/New Folder/headphone.ma",
+            "Modified Date": "02/22/2025  20:27"
+        }
+    },
+    {
+        "plane": {
+            "Polycount": 121,
+            "Path": "C:/Users/spike/Desktop/New Folder/plane.ma",
+            "Modified Date": "02/22/2025  20:27"
+        }
+    },
+    {
+        "platonic": {
+            "Polycount": 12,
+            "Path": "C:/Users/spike/Desktop/New Folder/platonic.ma",
+            "Modified Date": "02/22/2025  20:27"
+        }
+    },
+    {
+        "shose": {
+            "Polycount": 34254,
+            "Path": "C:/Users/spike/Desktop/New Folder/shose.ma",
+            "Modified Date": "02/22/2025  20:27"
+        }
+    },
+    {
+        "sphere": {
+            "Polycount": 382,
+            "Path": "C:/Users/spike/Desktop/New Folder/sphere.ma",
+            "Modified Date": "02/22/2025  20:27"
+        }
+    },
+    {
+        "tri_ball": {
+            "Polycount": 1146,
+            "Path": "C:/Users/spike/Desktop/New Folder/tri_ball.ma",
+            "Modified Date": "02/22/2025  20:27"
+        }
+    },
+    {
+        "tri_cone": {
+            "Polycount": 63,
+            "Path": "C:/Users/spike/Desktop/New Folder/tri_cone.ma",
+            "Modified Date": "02/22/2025  20:27"
+        }
+    },
+    {
+        "tri_cube": {
+            "Polycount": 24,
+            "Path": "C:/Users/spike/Desktop/New Folder/tri_cube.ma",
+            "Modified Date": "02/22/2025  20:27"
+        }
+    },
+    {
+        "tri_tube": {
+            "Polycount": 126,
+            "Path": "C:/Users/spike/Desktop/New Folder/tri_tube.ma",
+            "Modified Date": "02/22/2025  20:27"
+        }
+    },
+    {
+        "two_set": {
+            "Polycount": 421,
+            "Path": "C:/Users/spike/Desktop/New Folder/two_set.ma",
+            "Modified Date": "02/22/2025  20:27"
+        }
+    },
+    {
+        "cylinder": {
+            "Polycount": 42,
+            "Path": "C:/Users/spike/Desktop/New Folder/cylinder.ma",
+            "Modified Date": "02/22/2025  20:29"
         }
     }
 ]

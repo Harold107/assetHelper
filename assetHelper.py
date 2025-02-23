@@ -36,11 +36,15 @@ def maya_main_window():
 class AssetHelperDialog(QtWidgets.QDialog):
     # Class level variable
     FILE_FILTERS = "Maya (*.ma *.mb);;Maya ASCII (*.ma);;Maya Binary (*.mb);;ALL Files (*.*)"
+    ASSET_DIR = ""
     ICON_DIR = os.path.dirname(os.path.abspath(__file__)) + "\\icon\\"
     JSON_PATH = os.path.dirname(os.path.abspath(__file__)) + r"\assetinfo.json"
     IMAGE_DIR = os.path.dirname(os.path.abspath(__file__)) + "\\image\\"
     selected_filter = "Maya (*.ma *.mb)"
     hilight_index = None
+    center_layout = None
+    info_layout = None
+    info_switch = False
 
 
     def __init__(self, parent=maya_main_window()):
@@ -66,29 +70,34 @@ class AssetHelperDialog(QtWidgets.QDialog):
 
     # Create all the widgets
     def create_widgets(self):
-        # load button
+        # Load button
         self.load_assets_btn = QtWidgets.QPushButton("")
         self.load_assets_btn.resize(QtCore.QSize(113, 41))
         self.load_assets_btn.setIcon(QtGui.QIcon(self.ICON_DIR + "load_icon.png"))
+        self.load_assets_btn.setIconSize(QtCore.QSize(40, 40)) 
         self.load_assets_btn.setToolTip("Load Asset File\nLoad 3D asset to asset helper")
-        # remove button
+        # Remove button
         self.remove_assets_btn = QtWidgets.QPushButton("")
-        self.load_assets_btn.resize(QtCore.QSize(113, 41))
+        self.remove_assets_btn.resize(QtCore.QSize(113, 41))
+        self.remove_assets_btn.setIconSize(QtCore.QSize(40, 40)) 
         self.remove_assets_btn.setIcon(QtGui.QIcon(self.ICON_DIR + "remove_icon.png"))
         self.remove_assets_btn.setToolTip("Remove Asset\nRemove selected asset")
-        # info button
+        # Info button
         self.info_btn = QtWidgets.QPushButton("")
-        self.load_assets_btn.resize(QtCore.QSize(113, 41))
+        self.info_btn.resize(QtCore.QSize(113, 41))
+        self.info_btn.setIconSize(QtCore.QSize(40, 40)) 
         self.info_btn.setIcon(QtGui.QIcon(self.ICON_DIR + "info_icon.png"))
         self.info_btn.setToolTip("Information\nDisplay selected asset info")
-        # setting button
+        # Setting button
         self.setting_btn = QtWidgets.QPushButton("")
-        self.load_assets_btn.resize(QtCore.QSize(113, 41))
+        self.setting_btn.resize(QtCore.QSize(113, 41))
+        self.setting_btn.setIconSize(QtCore.QSize(40, 40)) 
         self.setting_btn.setIcon(QtGui.QIcon(self.ICON_DIR + "setting_icon.png"))
         self.setting_btn.setToolTip("Setting\nShow the setting window for asset helper")
-        # reset button
+        # Reset button
         self.reset_btn = QtWidgets  .QPushButton("")
-        self.load_assets_btn.resize(QtCore.QSize(113, 41))
+        self.reset_btn.resize(QtCore.QSize(113, 41))
+        self.reset_btn.setIconSize(QtCore.QSize(40, 40)) 
         self.reset_btn.setIcon(QtGui.QIcon(self.ICON_DIR + "reset_icon.png"))
         self.reset_btn.setToolTip("Rest All Records\nReset all the current asset records and setting")
 
@@ -98,8 +107,25 @@ class AssetHelperDialog(QtWidgets.QDialog):
         self.preview_list.setModel(self.model)
         self.preview_list.setViewMode(QtWidgets.QListView.IconMode)
         self.preview_list.setIconSize(QtCore.QSize(180,180))
+        self.preview_list.setMinimumSize(QtCore.QSize(600,700)) # prevent changing size
         self.preview_list.setSpacing(10)
         # self.preview_list.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
+
+        # info widgets
+        self.pic_info = QtWidgets.QLabel()
+        # pixmap = QtGui.QPixmap()
+        # pixmap.load("C:\\Users\\spike\\Documents\\GitHub\\assetHelper\\image\\shose.0.png")
+        # self.pic_info.setPixmap(pixmap)
+        self.pic_info.setAlignment(QtCore.Qt.AlignCenter)
+        self.pic_info.setMinimumSize(QtCore.QSize(395,500))
+
+        self.text_info = QtWidgets.QLabel()
+        self.text_info.setAlignment(QtCore.Qt.AlignHCenter )
+        # self.text_info.setText(f"Asset Name: Shose\nPolycount: 30000\nDate Modified: 02/22/2025 12:22")
+        custom_font = QtGui.QFont("Arial", 11)
+        custom_font.setWeight(20);
+        self.text_info.setFont(custom_font)
+        self.text_info.setMinimumSize(QtCore.QSize(395,0))
 
         # Buttom widgets
         self.import_btn = QtWidgets.QPushButton("Import to Current Scene")
@@ -119,6 +145,16 @@ class AssetHelperDialog(QtWidgets.QDialog):
         tool_bar_layout.addWidget(self.reset_btn, alignment=QtCore.Qt.AlignLeft)
         tool_bar_layout.addStretch()
 
+        # info layout
+        self.info_layout = QtWidgets.QVBoxLayout()
+        self.info_layout.addWidget(self.pic_info)
+        self.info_layout.addWidget(self.text_info)
+
+        # preview layout
+        self.center_layout = QtWidgets.QHBoxLayout()
+        self.center_layout.addWidget(self.preview_list)
+        # self.center_layout.addLayout(self.info_layout)
+
         # Buttom buttons layout
         button_layout = QtWidgets.QHBoxLayout()
         button_layout.addStretch()
@@ -128,7 +164,8 @@ class AssetHelperDialog(QtWidgets.QDialog):
         # Main layout
         main_layout = QtWidgets.QVBoxLayout(self)
         main_layout.addLayout(tool_bar_layout)
-        main_layout.addWidget(self.preview_list)
+        # main_layout.addWidget(self.preview_list)
+        main_layout.addLayout(self.center_layout)
         main_layout.addLayout(button_layout)
 
     # Create connection between UI and function
@@ -144,7 +181,17 @@ class AssetHelperDialog(QtWidgets.QDialog):
 
     # Functions for UI behavior
     def open_import_dialog(self, *arg):
-        selected_file_paths = QtWidgets.QFileDialog.getOpenFileNames(self, "Select File", "", self.FILE_FILTERS, self.selected_filter)[0]
+        # check asset_dir in json
+        if os.path.exists(self.JSON_PATH):
+            if os.stat(self.JSON_PATH).st_size != 0:
+                with open(self.JSON_PATH, "r") as file:
+                 json_data = json.load(file)
+
+        # if asset dir exist replace it else add to json
+        if len(json_data) != 0 and list(json_data[0].keys())[0] == "asset_dir":
+            self.ASSET_DIR = json_data[0]["asset_dir"]
+
+        selected_file_paths = QtWidgets.QFileDialog.getOpenFileNames(self, "Select File", self.ASSET_DIR, self.FILE_FILTERS, self.selected_filter)[0]
 
         # If cancel clicked
         if not selected_file_paths: 
@@ -177,11 +224,17 @@ class AssetHelperDialog(QtWidgets.QDialog):
 
 
     def open_info_dialog(self):
-        asset_name = self.model.itemFromIndex(self.hilight_index).text() # get asset name from clicked list item
-        data_list = helperFunctions.get_asset_data(asset_name, self.JSON_PATH) # use asset name from json data
+        if self.info_switch:
+            self.info_layout.setParent(None)
+            self.setMinimumWidth(700)
+            self.setMaximumWidth(700)
+            self.info_switch = False
+        else:
+            self.center_layout.addLayout(self.info_layout)
+            self.setMinimumWidth(1100)
+            self.setMaximumWidth(1100)
+            self.info_switch = True
 
-        geo_info = f"Asset Name: {asset_name}\nPolycount: {data_list[0]}\nDate Modified: {data_list[2]}" # store display message
-        info_dialog = QtWidgets.QMessageBox.information(self, "Asset Information", geo_info)
 
 
     def open_setting_dialog(self):
@@ -221,7 +274,7 @@ class AssetHelperDialog(QtWidgets.QDialog):
         brush = QtGui.QBrush(color)
         for asset_name in asset_list:
             item = QtGui.QStandardItem(asset_name) # set item name
-            font = QtGui.QFont("Times", 15) # create item font
+            font = QtGui.QFont("Arial", 15) # create item font
             item.setFont(font) # set font
             item.setIcon(QtGui.QIcon(self.IMAGE_DIR + asset_name + ".0.png")) # set image icon
             item.setEditable(False) # set not editable
@@ -245,6 +298,19 @@ class AssetHelperDialog(QtWidgets.QDialog):
     def highlight_item(self, index):
         # set class variable input item index
         self.hilight_index = index
+
+        # 
+        asset_name = self.model.itemFromIndex(index).text() # get asset name from clicked list item
+        data_list = helperFunctions.get_asset_data(asset_name, self.JSON_PATH) # use asset name from json data
+
+        # display geo snap shot
+        pixmap = QtGui.QPixmap()
+        pixmap.load(self.IMAGE_DIR + asset_name + ".0.png")
+        self.pic_info.setPixmap(pixmap)
+
+        # display geo info
+        geo_info = f"Asset Name: {asset_name}\nPolycount: {data_list[0]}\nDate Modified: {data_list[2]}" # store display message
+        self.text_info.setText(geo_info)
 
 
     def reset_data(self):

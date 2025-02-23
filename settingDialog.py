@@ -25,9 +25,9 @@ class SettingDialog(QtWidgets.QDialog):
         super(SettingDialog, self).__init__(parent)
 
         self.setWindowTitle("Setting Window")
-        self.setMinimumWidth(400)
+        self.setMinimumWidth(500)
         self.setMinimumHeight(100)
-        self.setMaximumWidth(400)
+        self.setMaximumWidth(500)
         self.setMaximumHeight(100)
 
         self.create_widgets()
@@ -55,7 +55,7 @@ class SettingDialog(QtWidgets.QDialog):
         file_path_layout.addWidget(self.select_file_path_btn)
 
         form_layout = QtWidgets.QFormLayout()
-        form_layout.addRow("File:", file_path_layout)
+        form_layout.addRow("Asset Folder:", file_path_layout)
         # form_layout.addRow("View Style:", self.combobox)
 
         button_layout = QtWidgets.QHBoxLayout()
