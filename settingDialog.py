@@ -1,4 +1,6 @@
 import sys
+import os
+import json
 
 from PySide2 import QtCore
 from PySide2 import QtGui
@@ -16,19 +18,22 @@ def maya_main_window():
         return wrapInstance(long(main_window_ptr), QtWidgets.QWidget)
 
 class SettingDialog(QtWidgets.QDialog):
+    ASSET_DIR = "\\home"
+    JSON_PATH = os.path.dirname(os.path.abspath(__file__)) + r"\assetinfo.json"
 
-    def __init__(self, parent=maya_main_window()):
+    def __init__(self, parent=None):
         super(SettingDialog, self).__init__(parent)
 
         self.setWindowTitle("Setting Window")
-        self.setMinimumWidth(300)
-        self.setMinimumHeight(150)
-        self.setMaximumWidth(300)
-        self.setMaximumHeight(150)
+        self.setMinimumWidth(400)
+        self.setMinimumHeight(100)
+        self.setMaximumWidth(400)
+        self.setMaximumHeight(100)
 
         self.create_widgets()
         self.create_layouts()
         self.create_connections()
+        self.initialize_dir()
 
 
     def create_widgets(self):
@@ -37,8 +42,8 @@ class SettingDialog(QtWidgets.QDialog):
         self.select_file_path_btn.setIcon(QtGui.QIcon(":fileOpen.png"))
         self.select_file_path_btn.setToolTip("Select File")
 
-        self.combobox = QtWidgets.QComboBox()
-        self.combobox.addItems(["Image View", "Text View"])
+        # self.combobox = QtWidgets.QComboBox()
+        # self.combobox.addItems(["Image View", "Text View"])
 
         self.apply_btn = QtWidgets.QPushButton("Apply")
         self.close_btn = QtWidgets.QPushButton("Close")
@@ -51,7 +56,7 @@ class SettingDialog(QtWidgets.QDialog):
 
         form_layout = QtWidgets.QFormLayout()
         form_layout.addRow("File:", file_path_layout)
-        form_layout.addRow("View Style:", self.combobox)
+        # form_layout.addRow("View Style:", self.combobox)
 
         button_layout = QtWidgets.QHBoxLayout()
         button_layout.addStretch()
@@ -66,23 +71,69 @@ class SettingDialog(QtWidgets.QDialog):
     def create_connections(self):
         self.select_file_path_btn.clicked.connect(self.add_default_dir)
 
-        self.combobox.activated.connect(self.on_activated_int)
-        self.combobox.activated[str].connect(self.on_activated_str) # [str] pyside handles it with the matching decorator
+        # self.combobox.activated.connect(self.on_activated_int)
+        # self.combobox.activated[str].connect(self.on_activated_str) # [str] pyside handles it with the matching decorator
 
         self.apply_btn.clicked.connect(self.apply_setting)
         self.close_btn.clicked.connect(self.close)
 
 
-    def add_default_dir():
-        print("Open Folder Dialog")
+    def add_default_dir(self):
+        asset_dir = QtWidgets.QFileDialog.getExistingDirectory(self, "Open Directory", "")
+        self.filepath_le.setText(asset_dir)
+
+
 
     @QtCore.Slot(int)
     def on_activated_int(self, index):
         print(f"ComboBox Index: {index}")
 
+
     @QtCore.Slot(str)
     def on_activated_str(self, text):
         print(f"ComboBox Text: {text}")
 
-    def apply_setting():
+
+    def apply_setting(self):
         print("Apply Default Dir")
+        print(self.filepath_le.text())
+        dir_data = {"asset_dir" : self.filepath_le.text()}
+
+        # read json data
+        if os.path.exists(self.JSON_PATH):
+            if os.stat(self.JSON_PATH).st_size != 0:
+                with open(self.JSON_PATH, "r") as file:
+                 json_data = json.load(file)
+
+        # if asset dir exist replace it else add to json
+        if len(json_data) != 0 and list(json_data[0].keys())[0] == "asset_dir":
+            json_data[0] = dir_data
+        else:
+            json_data.insert(0, dir_data)
+
+        # write new data to json
+        with open(self.JSON_PATH, "w") as file:
+            json.dump(json_data, file, indent=4)
+
+        self.close()
+
+
+    def initialize_dir(self):
+        asset_dir = ""
+        # read json data
+        if os.path.exists(self.JSON_PATH):
+            if os.stat(self.JSON_PATH).st_size != 0:
+                with open(self.JSON_PATH, "r") as file:
+                 json_data = json.load(file)
+
+        # if asset dir exist replace it else add to json
+        if len(json_data) != 0 and list(json_data[0].keys())[0] == "asset_dir":
+            asset_dir = json_data[0]["asset_dir"]
+
+        if asset_dir:
+            self.filepath_le.setText(asset_dir)
+
+
+    def test_func(self):
+        self.destroy()
+

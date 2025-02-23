@@ -36,8 +36,9 @@ def maya_main_window():
 class AssetHelperDialog(QtWidgets.QDialog):
     # Class level variable
     FILE_FILTERS = "Maya (*.ma *.mb);;Maya ASCII (*.ma);;Maya Binary (*.mb);;ALL Files (*.*)"
+    ICON_DIR = os.path.dirname(os.path.abspath(__file__)) + "\\icon\\"
     JSON_PATH = os.path.dirname(os.path.abspath(__file__)) + r"\assetinfo.json"
-    IMAGE_PATH = os.path.dirname(os.path.abspath(__file__)) + "\\image\\"
+    IMAGE_DIR = os.path.dirname(os.path.abspath(__file__)) + "\\image\\"
     selected_filter = "Maya (*.ma *.mb)"
     hilight_index = None
 
@@ -46,8 +47,9 @@ class AssetHelperDialog(QtWidgets.QDialog):
         super(AssetHelperDialog, self).__init__(parent)
         # Set window value
         self.setWindowTitle("Asset Helper")
-        self.setMinimumWidth(550)
-        self.setMinimumHeight(500)
+        self.setMinimumWidth(700)
+        self.setMinimumHeight(810)
+        self.setMaximumWidth(700)
 
         # Remove HelpButton on the bar, check for python version
         if sys.version_info.major >= 3:
@@ -59,24 +61,44 @@ class AssetHelperDialog(QtWidgets.QDialog):
         self.create_widgets()
         self.create_layouts()
         self.create_connections()
-
         self.initialize_data()
+
 
     # Create all the widgets
     def create_widgets(self):
-        # Top bar widgets
-        self.import_assets_btn = QtWidgets.QPushButton("Load")
-        self.remove_assets_btn = QtWidgets.QPushButton("Remove")
-        self.info_btn = QtWidgets.QPushButton("Info")
-        self.setting_btn = QtWidgets.QPushButton("Setting")
-        self.reset_btn = QtWidgets  .QPushButton("Reset")
+        # load button
+        self.load_assets_btn = QtWidgets.QPushButton("")
+        self.load_assets_btn.resize(QtCore.QSize(113, 41))
+        self.load_assets_btn.setIcon(QtGui.QIcon(self.ICON_DIR + "load_icon.png"))
+        self.load_assets_btn.setToolTip("Load Asset File\nLoad 3D asset to asset helper")
+        # remove button
+        self.remove_assets_btn = QtWidgets.QPushButton("")
+        self.load_assets_btn.resize(QtCore.QSize(113, 41))
+        self.remove_assets_btn.setIcon(QtGui.QIcon(self.ICON_DIR + "remove_icon.png"))
+        self.remove_assets_btn.setToolTip("Remove Asset\nRemove selected asset")
+        # info button
+        self.info_btn = QtWidgets.QPushButton("")
+        self.load_assets_btn.resize(QtCore.QSize(113, 41))
+        self.info_btn.setIcon(QtGui.QIcon(self.ICON_DIR + "info_icon.png"))
+        self.info_btn.setToolTip("Information\nDisplay selected asset info")
+        # setting button
+        self.setting_btn = QtWidgets.QPushButton("")
+        self.load_assets_btn.resize(QtCore.QSize(113, 41))
+        self.setting_btn.setIcon(QtGui.QIcon(self.ICON_DIR + "setting_icon.png"))
+        self.setting_btn.setToolTip("Setting\nShow the setting window for asset helper")
+        # reset button
+        self.reset_btn = QtWidgets  .QPushButton("")
+        self.load_assets_btn.resize(QtCore.QSize(113, 41))
+        self.reset_btn.setIcon(QtGui.QIcon(self.ICON_DIR + "reset_icon.png"))
+        self.reset_btn.setToolTip("Rest All Records\nReset all the current asset records and setting")
 
         # Preview widget
         self.preview_list = QtWidgets.QListView()
         self.model = QtGui.QStandardItemModel()
         self.preview_list.setModel(self.model)
-        self.preview_list.setIconSize(QtCore.QSize(180,180))
         self.preview_list.setViewMode(QtWidgets.QListView.IconMode)
+        self.preview_list.setIconSize(QtCore.QSize(180,180))
+        self.preview_list.setSpacing(10)
         # self.preview_list.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
 
         # Buttom widgets
@@ -90,7 +112,7 @@ class AssetHelperDialog(QtWidgets.QDialog):
     def create_layouts(self):
         # Top buttons layout
         tool_bar_layout = QtWidgets.QHBoxLayout()
-        tool_bar_layout.addWidget(self.import_assets_btn, alignment=QtCore.Qt.AlignLeft)
+        tool_bar_layout.addWidget(self.load_assets_btn, alignment=QtCore.Qt.AlignLeft)
         tool_bar_layout.addWidget(self.remove_assets_btn, alignment=QtCore.Qt.AlignLeft)
         tool_bar_layout.addWidget(self.info_btn, alignment=QtCore.Qt.AlignLeft)
         tool_bar_layout.addWidget(self.setting_btn, alignment=QtCore.Qt.AlignLeft)
@@ -111,14 +133,14 @@ class AssetHelperDialog(QtWidgets.QDialog):
 
     # Create connection between UI and function
     def create_connections(self):
-        self.import_assets_btn.clicked.connect(self.open_import_dialog)
+        self.load_assets_btn.clicked.connect(self.open_import_dialog)
         self.remove_assets_btn.clicked.connect(self.remove_selected_item)
         self.info_btn.clicked.connect(self.open_info_dialog)
         self.setting_btn.clicked.connect(self.open_setting_dialog)
         self.reset_btn.clicked.connect(self.reset_data)
         self.import_btn.clicked.connect(self.import_to_scene)
         self.preview_list.clicked.connect(self.highlight_item)
-        self.close_btn.clicked.connect(self.close)
+        self.close_btn.clicked.connect(self.close_windows) # test function
 
     # Functions for UI behavior
     def open_import_dialog(self, *arg):
@@ -141,7 +163,7 @@ class AssetHelperDialog(QtWidgets.QDialog):
         if len(asset_list) > 0 and len(path_list) > 0:
             # load files from path list
             for n in range (len(path_list)):
-                helperFunctions.load_files(asset_list[n], path_list[n], self.JSON_PATH, self.IMAGE_PATH)
+                helperFunctions.load_files(asset_list[n], path_list[n], self.JSON_PATH, self.IMAGE_DIR)
 
             # Add file name to preview
             self.asset_to_list(asset_list)
@@ -150,7 +172,7 @@ class AssetHelperDialog(QtWidgets.QDialog):
 
 
     def remove_selected_item(self):
-        helperFunctions.delete_load_asset(self.model.itemFromIndex(self.hilight_index).text(), self.JSON_PATH, self.IMAGE_PATH)
+        helperFunctions.delete_load_asset(self.model.itemFromIndex(self.hilight_index).text(), self.JSON_PATH, self.IMAGE_DIR)
         self.model.removeRow(self.hilight_index.row())
 
 
@@ -164,6 +186,7 @@ class AssetHelperDialog(QtWidgets.QDialog):
 
     def open_setting_dialog(self):
         setting_dialog = settingDialog.SettingDialog(self)
+        setting_dialog.setObjectName("SettingWindow")
         setting_dialog.show()
 
 
@@ -196,15 +219,14 @@ class AssetHelperDialog(QtWidgets.QDialog):
     def asset_to_list(self, asset_list):
         color = QtGui.QColor(100, 100, 100, 127)
         brush = QtGui.QBrush(color)
-        # brush = QtGui.QBrush(QtCore.Qt.red)
         for asset_name in asset_list:
             item = QtGui.QStandardItem(asset_name) # set item name
             font = QtGui.QFont("Times", 15) # create item font
             item.setFont(font) # set font
-            item.setIcon(QtGui.QIcon(self.IMAGE_PATH + asset_name + ".0.png")) # set image icon
+            item.setIcon(QtGui.QIcon(self.IMAGE_DIR + asset_name + ".0.png")) # set image icon
             item.setEditable(False) # set not editable
             item.setCheckable(True) # not use checkable for selection for now
-
+            item.setTextAlignment(QtCore.Qt.AlignCenter)
             item.setBackground(brush)
             self.model.appendRow(item) # add to listview
 
@@ -226,18 +248,20 @@ class AssetHelperDialog(QtWidgets.QDialog):
 
 
     def reset_data(self):
-        json_data = [] # create empty list to replace json data
-        if os.path.exists(self.JSON_PATH):
-            with open(self.JSON_PATH, "w") as file:
-                # dump empty data to json file
-                json.dump(json_data, file, indent=4)
+        message_dialog = QtWidgets.QMessageBox.question(self, "Reset all records", "Do you want to reset all the asset and setting?")
+        if message_dialog == QtWidgets.QMessageBox.StandardButton.Yes:
+            json_data = [] # create empty list to replace json data
+            if os.path.exists(self.JSON_PATH):
+                with open(self.JSON_PATH, "w") as file:
+                    # dump empty data to json file
+                    json.dump(json_data, file, indent=4)
 
-        self.model.clear() # clear list view
+            self.model.clear() # clear list view
 
-        # delete all images
-        images = os.listdir(self.IMAGE_PATH)
-        for image in images:
-            os.remove(self.IMAGE_PATH + image)
+            # delete all images
+            images = os.listdir(self.IMAGE_DIR)
+            for image in images:
+                os.remove(self.IMAGE_DIR + image)
 
 
     # initialize data when asset helper window created
@@ -247,17 +271,23 @@ class AssetHelperDialog(QtWidgets.QDialog):
             if os.stat(self.JSON_PATH).st_size != 0:
                 with open(self.JSON_PATH, "r") as file:
                     json_data = json.load(file)
-                # append json data to empty list
+
+                # append json data to empty list if it's asset data
                 for data in json_data:
-                    asset_list.append(list(data.keys())[0])
+                    if list(data.keys())[0] != "asset_dir":
+                        asset_list.append(list(data.keys())[0])
             self.asset_to_list(asset_list)
 
 
+    def close_windows(self):
+        children = self.children()
+        if children[-1].objectName() == "SettingWindow":
+            children[-1].destroy()
+        self.close()
+
     # test function
     def test_print(self):
-        # print(self.model.rowCount())
-        for i in range (self.model.rowCount()):
-            print(self.model.item(i).text())
+        self.load_assets_btn.resize(QtCore.QSize(113, 41))
 
 
 

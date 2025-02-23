@@ -1,51 +1,16 @@
 [
     {
-        "cube": {
-            "Polycount": 8,
-            "Path": "C:/Users/spike/Desktop/New Folder/cube.ma",
-            "Modified Date": "02/19/2025  21:29"
-        }
-    },
-    {
-        "cylinder": {
-            "Polycount": 42,
-            "Path": "C:/Users/spike/Desktop/New Folder/cylinder.ma",
-            "Modified Date": "02/19/2025  21:29"
-        }
-    },
-    {
         "sphere": {
             "Polycount": 382,
             "Path": "C:/Users/spike/Desktop/New Folder/sphere.ma",
-            "Modified Date": "02/19/2025  21:29"
+            "Modified Date": "02/22/2025  18:01"
         }
     },
     {
-        "two_set": {
-            "Polycount": 421,
-            "Path": "C:/Users/spike/Desktop/New Folder/two_set.ma",
-            "Modified Date": "02/19/2025  21:29"
-        }
-    },
-    {
-        "disc": {
-            "Polycount": 61,
-            "Path": "C:/Users/spike/Desktop/New Folder/disc.ma",
-            "Modified Date": "02/19/2025  21:33"
-        }
-    },
-    {
-        "plane": {
-            "Polycount": 121,
-            "Path": "C:/Users/spike/Desktop/New Folder/plane.ma",
-            "Modified Date": "02/19/2025  21:33"
-        }
-    },
-    {
-        "platonic": {
-            "Polycount": 12,
-            "Path": "C:/Users/spike/Desktop/New Folder/platonic.ma",
-            "Modified Date": "02/19/2025  21:33"
+        "cube": {
+            "Polycount": 8,
+            "Path": "C:/Users/spike/Desktop/New Folder/cube.ma",
+            "Modified Date": "02/22/2025  18:01"
         }
     }
 ]
