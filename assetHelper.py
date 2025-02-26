@@ -14,9 +14,9 @@ import maya.cmds as cmds
 """
 Only for testing
 """
-project_path = r"C:\Users\spike\Documents\GitHub\assetHelper"
-if project_path not in sys.path:
-    sys.path.append(project_path)
+# project_path = r"C:\Users\spike\Documents\GitHub\assetHelper"
+# if project_path not in sys.path:
+#     sys.path.append(project_path)
 import settingDialog
 reload(settingDialog)
 import helperFunctions
@@ -51,9 +51,9 @@ class AssetHelperDialog(QtWidgets.QDialog):
         super(AssetHelperDialog, self).__init__(parent)
         # Set window value
         self.setWindowTitle("Asset Helper")
-        self.setMinimumWidth(700)
+        self.setMinimumWidth(580)
         self.setMinimumHeight(810)
-        self.setMaximumWidth(700)
+        self.setMaximumWidth(580)
 
         # Remove HelpButton on the bar, check for python version
         if sys.version_info.major >= 3:
@@ -70,34 +70,38 @@ class AssetHelperDialog(QtWidgets.QDialog):
 
     # Create all the widgets
     def create_widgets(self):
+        btn_icon_size = 28;
+        t_btn_width = 90
+        t_btn_height = 32
+
         # Load button
-        self.load_assets_btn = QtWidgets.QPushButton("")
-        self.load_assets_btn.resize(QtCore.QSize(113, 41))
+        self.load_assets_btn = QtWidgets.QPushButton("Load")
+        self.load_assets_btn.setFixedSize(t_btn_width,t_btn_height)
         self.load_assets_btn.setIcon(QtGui.QIcon(self.ICON_DIR + "load_icon.png"))
-        self.load_assets_btn.setIconSize(QtCore.QSize(40, 40)) 
+        self.load_assets_btn.setIconSize(QtCore.QSize(btn_icon_size, btn_icon_size)) 
         self.load_assets_btn.setToolTip("Load Asset File\nLoad 3D asset to asset helper")
         # Remove button
-        self.remove_assets_btn = QtWidgets.QPushButton("")
-        self.remove_assets_btn.resize(QtCore.QSize(113, 41))
-        self.remove_assets_btn.setIconSize(QtCore.QSize(40, 40)) 
+        self.remove_assets_btn = QtWidgets.QPushButton("Remove")
+        self.remove_assets_btn.setFixedSize(t_btn_width,t_btn_height)
+        self.remove_assets_btn.setIconSize(QtCore.QSize(btn_icon_size, btn_icon_size)) 
         self.remove_assets_btn.setIcon(QtGui.QIcon(self.ICON_DIR + "remove_icon.png"))
-        self.remove_assets_btn.setToolTip("Remove Asset\nRemove selected asset")
+        self.remove_assets_btn.setToolTip("Remove Asset\nRemove selected asset, ctl or shift can select more than one asset")
         # Info button
-        self.info_btn = QtWidgets.QPushButton("")
-        self.info_btn.resize(QtCore.QSize(113, 41))
-        self.info_btn.setIconSize(QtCore.QSize(40, 40)) 
+        self.info_btn = QtWidgets.QPushButton("Asset Info")
+        self.info_btn.setFixedSize(t_btn_width,t_btn_height)
+        self.info_btn.setIconSize(QtCore.QSize(btn_icon_size, btn_icon_size)) 
         self.info_btn.setIcon(QtGui.QIcon(self.ICON_DIR + "info_icon.png"))
-        self.info_btn.setToolTip("Information\nDisplay selected asset info")
+        self.info_btn.setToolTip("Information\nDisplay selected asset info on side view")
         # Setting button
-        self.setting_btn = QtWidgets.QPushButton("")
-        self.setting_btn.resize(QtCore.QSize(113, 41))
-        self.setting_btn.setIconSize(QtCore.QSize(40, 40)) 
+        self.setting_btn = QtWidgets.QPushButton("Setting")
+        self.setting_btn.setFixedSize(t_btn_width,t_btn_height)
+        self.setting_btn.setIconSize(QtCore.QSize(btn_icon_size, btn_icon_size)) 
         self.setting_btn.setIcon(QtGui.QIcon(self.ICON_DIR + "setting_icon.png"))
         self.setting_btn.setToolTip("Setting\nShow the setting window for asset helper")
         # Reset button
-        self.reset_btn = QtWidgets  .QPushButton("")
-        self.reset_btn.resize(QtCore.QSize(113, 41))
-        self.reset_btn.setIconSize(QtCore.QSize(40, 40)) 
+        self.reset_btn = QtWidgets  .QPushButton("Reset")
+        self.reset_btn.setFixedSize(t_btn_width,t_btn_height)
+        self.reset_btn.setIconSize(QtCore.QSize(btn_icon_size, btn_icon_size)) 
         self.reset_btn.setIcon(QtGui.QIcon(self.ICON_DIR + "reset_icon.png"))
         self.reset_btn.setToolTip("Rest All Records\nReset all the current asset records and setting")
 
@@ -106,30 +110,29 @@ class AssetHelperDialog(QtWidgets.QDialog):
         self.model = QtGui.QStandardItemModel()
         self.preview_list.setModel(self.model)
         self.preview_list.setViewMode(QtWidgets.QListView.IconMode)
-        self.preview_list.setIconSize(QtCore.QSize(180,180))
-        self.preview_list.setMinimumSize(QtCore.QSize(600,700)) # prevent changing size
+        self.preview_list.setIconSize(QtCore.QSize(150,150))
+        self.preview_list.setMinimumSize(QtCore.QSize(500,700)) # prevent changing size
         self.preview_list.setSpacing(10)
-        # self.preview_list.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
+        self.preview_list.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
 
-        # info widgets
+        # Info widgets
         self.pic_info = QtWidgets.QLabel()
-        # pixmap = QtGui.QPixmap()
-        # pixmap.load("C:\\Users\\spike\\Documents\\GitHub\\assetHelper\\image\\shose.0.png")
-        # self.pic_info.setPixmap(pixmap)
         self.pic_info.setAlignment(QtCore.Qt.AlignCenter)
-        self.pic_info.setMinimumSize(QtCore.QSize(395,500))
+        self.pic_info.setMinimumSize(QtCore.QSize(20,500))
 
         self.text_info = QtWidgets.QLabel()
         self.text_info.setAlignment(QtCore.Qt.AlignHCenter )
-        # self.text_info.setText(f"Asset Name: Shose\nPolycount: 30000\nDate Modified: 02/22/2025 12:22")
         custom_font = QtGui.QFont("Arial", 11)
         custom_font.setWeight(20);
         self.text_info.setFont(custom_font)
-        self.text_info.setMinimumSize(QtCore.QSize(395,0))
+        self.text_info.setMinimumSize(QtCore.QSize(300,0))
 
-        # Buttom widgets
-        self.import_btn = QtWidgets.QPushButton("Import to Current Scene")
+        # Bottom widgets
+        self.import_btn = QtWidgets.QPushButton("Import Checked Assets to Scene")
         self.import_btn.setFixedSize(200,30)
+        self.import_btn.setIconSize(QtCore.QSize(20, 20)) 
+        self.import_btn.setIcon(QtGui.QIcon(self.ICON_DIR + "import_icon.png"))
+        self.import_btn.setToolTip("Import all the checked asset to scene")
 
         self.close_btn = QtWidgets.QPushButton("Close")
         self.close_btn.setFixedSize(50,30)
@@ -177,7 +180,7 @@ class AssetHelperDialog(QtWidgets.QDialog):
         self.reset_btn.clicked.connect(self.reset_data)
         self.import_btn.clicked.connect(self.import_to_scene)
         self.preview_list.clicked.connect(self.highlight_item)
-        self.close_btn.clicked.connect(self.close_windows) # test function
+        self.close_btn.clicked.connect(self.test_print) # test function
 
     # Functions for UI behavior
     def open_import_dialog(self, *arg):
@@ -219,20 +222,27 @@ class AssetHelperDialog(QtWidgets.QDialog):
 
 
     def remove_selected_item(self):
-        helperFunctions.delete_load_asset(self.model.itemFromIndex(self.hilight_index).text(), self.JSON_PATH, self.IMAGE_DIR)
-        self.model.removeRow(self.hilight_index.row())
+        row_list = [] # keep all the rows from selection
+        for index in self.preview_list.selectedIndexes():
+            helperFunctions.delete_load_asset(self.model.itemFromIndex(index).text(), self.JSON_PATH, self.IMAGE_DIR)
+            row_list.append(index.row())
+
+        # remove from listview in reverse order, so the order won't be affected during for loop
+        row_list.sort(reverse=True)
+        for row in row_list:
+            self.model.removeRow(row)
 
 
     def open_info_dialog(self):
         if self.info_switch:
             self.info_layout.setParent(None)
-            self.setMinimumWidth(700)
-            self.setMaximumWidth(700)
+            self.setMinimumWidth(580)
+            self.setMaximumWidth(580)
             self.info_switch = False
         else:
             self.center_layout.addLayout(self.info_layout)
-            self.setMinimumWidth(1100)
-            self.setMaximumWidth(1100)
+            self.setMinimumWidth(905)
+            self.setMaximumWidth(905)
             self.info_switch = True
 
 
@@ -246,9 +256,6 @@ class AssetHelperDialog(QtWidgets.QDialog):
     def import_to_scene(self):
         selected_file_paths = [] # contain asset file paths
         load_file_list = [] # contain asset names
-        if not self.model.rowCount():
-            selection_warning_dialog = QtWidgets.QMessageBox.warning(self, "Import Asset Warning","No Asset Selected!\nPlease select at least one asset")
-
         # Iterate through the model
         for index in range(self.model.rowCount()):
             # Append to load_file_list if it's checked and not in list yet
@@ -259,14 +266,18 @@ class AssetHelperDialog(QtWidgets.QDialog):
                 if self.model.item(index).text() in load_file_list:
                     load_file_list.remove(self.model.item(index).text())
 
-        # Append file path to list 
-        for asset in load_file_list:
-            file_path = helperFunctions.get_asset_data(asset, self.JSON_PATH)[1]
-            selected_file_paths.append(file_path)
+        if len(load_file_list) == 0:
+            QtWidgets.QMessageBox.information(self, "Import Asset Warning","No Asset Selected!\nPlease select at least one asset to import")
+            # print("No asset is checked to be imported!")
+        else:
+            # Append file path to list 
+            for asset in load_file_list:
+                file_path = helperFunctions.get_asset_data(asset, self.JSON_PATH)[1]
+                selected_file_paths.append(file_path)
 
-        # Import file from the path list
-        for path in selected_file_paths:
-            cmds.file(path, i=True, ignoreVersion=True)
+            # Import file from the path list
+            for path in selected_file_paths:
+                cmds.file(path, i=True, ignoreVersion=True)
 
 
     def asset_to_list(self, asset_list):
@@ -353,11 +364,10 @@ class AssetHelperDialog(QtWidgets.QDialog):
 
     # test function
     def test_print(self):
-        self.load_assets_btn.resize(QtCore.QSize(113, 41))
-
-
-
-
+        print((self.preview_list.selectedIndexes()))
+        for index in self.preview_list.selectedIndexes():
+            print(self.model.itemFromIndex(index).text())
+            print(index.row())
 
 
 if __name__ == "__main__":
