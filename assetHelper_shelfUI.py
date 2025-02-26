@@ -16,9 +16,10 @@ def custom_shelf():
                      annotation='Asset Helper',
                      image1=ICON_PATH + "assetHelper_icon.png",
                      label='assetHelper',
-                     command='import assetHelper;importlib.reload(assetHelper);assetHelper.assetHelper.AssetHelperDialog().show()')
+                     command='import assetHelper;importlib.reload(assetHelper);assetHelper.AssetHelperDialog().show()')
 
 
 def delete_custom_shelf():
     if cmds.shelfLayout(MENU_NAME, exists=True):
+        print("Delete menu")
         cmds.deleteUI(MENU_NAME)
